@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    table {
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+    }
+    
+    .merged {
+      background-color: #e8f0fe;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // JavaScript code for generating the table and merging columns
+    function generateHTMLTable(data, config) {
+      const table = document.createElement('table');
+      const headerRow = document.createElement('tr');
+
+      config.forEach((columnConfig) => {
+        const headerCell = document.createElement('th');
+        headerCell.textContent = columnConfig.HeaderName;
+        headerRow.appendChild(headerCell);
+      });
+
+      table.appendChild(headerRow);
+
+      let previousRow = null;
+
+      data.forEach((row) => {
+        const tableRow = document.createElement('tr');
+
+        config.forEach((columnConfig) => {
+          const tableCell = document.createElement('td');
+          const columnValue = typeof columnConfig.Column === 'function' ? columnConfig.Column(row) : row[columnConfig.Column];
+
+          if (columnConfig.Merge && previousRow && previousRow[columnConfig.Column] === row[columnConfig.Column]) {
+            tableCell.classList.add('merged');
+          }
+
+          tableCell.textContent = columnValue;
+          tableRow.appendChild(tableCell);
+        });
+
+        if (previousRow) {
+          let shouldMerge = true;
+
+          config.forEach((columnConfig) => {
+            if (columnConfig.Merge && previousRow[columnConfig.Column] !== row[columnConfig.Column]) {
+              shouldMerge = false;
+            }
+          });
+
+          if (shouldMerge) {
+            tableRow.classList.add('merged');
+          }
+        }
+
+        previousRow = row;
+        table.appendChild(tableRow);
+      });
+
+      document.body.appendChild(table);
+    }
+
+    // Sample data and config
+    const inputData = [
+      {"Organization":"Google","UserId":"akumar","UserName":"Ashok Kumar","Department":"Sales","Designation":"Sales","CheckInTime":1548909000000,"CheckOutTime":1548945000000},
+      {"Organization":"Google","UserId":"akumar","UserName":"Ashok Kumar","Department":"Sales","Designation":"Sales","CheckInTime":1549081800000,"CheckOutTime":1549110600000},
+      {"Organization":"FB","UserId":"phanis","UserName":"Phani Sai","Department":"Sales","Designation":"Sales","CheckInTime":1548909000000,"CheckOutTime":1548945000000},
+      {"Organization":"FB","UserId":"phanis","UserName":"Phani Sai","Department":"Sales","Designation":"Sales","CheckInTime":1549081800000,"CheckOutTime":1549110600000},
+      {"Organization":"FB","UserId":"lakshmig","UserName":"Laskhmi Gayathri","Department":"Quality","Designation":"QA Engineer","CheckInTime":1549081800000,"CheckOutTime":1549110600000},
+      {"Organization":"FB","UserId":"lakshmig","UserName":"Laskhmi Gayathri","Department":"Quality","Designation":"QA Engineer","CheckInTime":1549081800000,"CheckOutTime":1549110600000}
+    ];
+
+    const config = [
+      { HeaderName: 'Organization', Column: 'Organization', Merge: true },
+      { HeaderName: 'Department', Column: 'Department', Merge: true },
+      { HeaderName: 'UserName', Column: 'UserName', Merge: true },
+      {
